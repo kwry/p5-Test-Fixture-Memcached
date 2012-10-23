@@ -1,0 +1,21 @@
+---
+-
+  key: foo
+  value: bar
+-
+  key: array
+  value:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+-
+  key: hash
+  value:
+    apple: red
+    banana: yellow
+-
+  key: expired
+  value: bar
+  expired: 3 

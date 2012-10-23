@@ -1,0 +1,145 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use 5.008000;
+use YAML::XS qw(Dump DumpFile);
+use Getopt::Long;
+use Cache::Memcached::Fast;
+use IO::Socket::INET;
+use Pod::Usage;
+
+our $VERSION = '0.1';
+
+# default option
+my $host = "127.0.0.1";
+my $port = 11211;
+
+GetOptions(
+    "h|host=s"                 => \$host,
+    "p|port=i"                 => \$port,
+    "o|output-file=s"          => \my $output_file,
+    "include=s"                => \my $include,
+    "exclude=s"                => \my $exclude,
+    "help"                     => \my $help,
+    "v|version"                => \my $version,
+) || pod2usage(1);
+
+pod2usage(-exitval => 0, -verbose => 1) if $help;
+pod2usage(-exitval => 0, -verbose => 99, -sections => [qw(VERSION AUTHOR)]) if $version;
+
+my $addr = $host . ":" . $port;
+my $sock = IO::Socket::INET->new(PeerAddr => $addr, Proto => 'tcp');
+my $memd = Cache::Memcached::Fast->new({ servers => [$addr] });
+
+my %items;
+print $sock "stats items\r\n";
+while (<$sock>) {
+    last if /^END/;
+    if (my ($bucket, $num) = /^STAT items:(\d*):number (\d*)/) {
+        $items{$bucket} = $num;
+    }
+}
+
+my @keys;
+for my $bucket (sort(keys(%items))) {
+    print $sock "stats cachedump $bucket $items{$bucket}\r\n";
+    while (<$sock>) {
+        last if /^END/;
+        if (my ($key) = /^ITEM (\S+) \[.* \d+ s\]/) {
+            next if $exclude && $key =~ /$exclude/;
+            next if $include && $key !~ /$include/;
+            push @keys, $key;
+        }
+    }
+}
+
+my $data = $memd->get_multi(@keys);
+my @fixtures;
+for my $key (@keys) {
+    push @fixtures, { key => $key, value => $data->{$key} };
+}
+
+if (scalar(@fixtures) == 0) {
+    warn "data nothing\n";
+    exit;
+}
+
+if ($output_file) {
+    DumpFile($output_file, \@fixtures);
+} else {
+    print Dump(\@fixtures);
+}
+
+exit;
+
+__END__
+=head1 NAME
+
+make_memcached_fixture - make fixture yaml from memcached
+
+=head1 VERSION
+
+0.1
+
+=head1 SYNOPSIS
+
+Execute:
+
+  make_memcached_fixture [--option]
+
+
+Options:
+
+  -h|--host              memcached host
+  -p|--port              memcached port
+  -o|--output-file       output file path
+  --include              only include key pattern
+  --exclude              exclude key pattern
+  --help                 display this page
+  -v|--version           display version
+
+=head1 DESCRIPTION
+
+make_memcached_fixture - make fixture yaml from memcached
+
+=head1 OPTIONS
+
+=over 4
+
+=item -h|--host
+
+memcached host. default 127.0.0.1
+
+=item -p|--port
+
+memcached port. default 11211
+
+=item -o|--output-file
+
+fixture output file path. default stdout
+
+=item --include
+
+only include key pattern
+
+=item --exclude
+
+exclude key pattern
+
+=back
+
+=head1 AUTHOR
+
+kwry E<lt>kwry@kwry.infoE<gt>
+
+=head1 SEE ALSO
+
+L<Test::Fixture::KyotoTycoon> L<Cache::Memcached::Fast> L<YAML::XS>
+
+=head1 LICENSE
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
+=cut
