@@ -51,6 +51,9 @@ sub _insert {
 sub _validate_fixture {
     my $fixture = shift;
     croak "fixture must be ARRAY reference." unless ref $fixture eq 'ARRAY';
+    for my $ref (@$fixture) {
+        croak "must set key and value fields" if !$ref->{key} || !defined $ref->{value};
+    }
 }
 
 1;
