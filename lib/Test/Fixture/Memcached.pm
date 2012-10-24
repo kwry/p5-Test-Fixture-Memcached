@@ -95,9 +95,19 @@ This module implements the Test::Fixture::KyotoTycoon helpful.
 
 =head1 METHODS
 
-=head2 construct_memcached_fixture
+=head2 construct_memcached_fixture( %specs )
 
-load to memcached
+The following is %specs details.
+
+=over
+
+=item memd
+
+Required parameter. memd is L<Cache::Memcached::Fast>'s object
+
+=item fixture
+
+Required parameter. fixture is SCALAR or ARRAYREF, Specify fixture files.
 
 =head1 SEE ALSO
 
