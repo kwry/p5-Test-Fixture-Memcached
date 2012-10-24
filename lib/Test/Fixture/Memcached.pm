@@ -47,12 +47,12 @@ sub _insert {
     $memd->set_multi(@pairs);
 }
 
-# FIXME
 sub _validate_fixture {
     my $fixture = shift;
     croak "fixture must be ARRAY reference." unless ref $fixture eq 'ARRAY';
     for my $ref (@$fixture) {
-        croak "must set key and value fields" if !$ref->{key} || !defined $ref->{value};
+        croak "must set key and value fields." if !$ref->{key} || !defined $ref->{value};
+        croak "key must be scalar value." if ref $ref->{key};
     }
 }
 

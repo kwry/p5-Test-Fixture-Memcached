@@ -64,6 +64,11 @@ subtest 'validate fixture' => sub {
             { key => 'aaa', invalid => 'bbb' }
         ];
     };
+    dies_ok {
+        construct_memcached_fixture memd => $memd, fixture => [
+            { key => ['aaa'], value => 'bbb' }
+        ];
+    };
 };
 
 subtest 'cleard fixture' => sub {
