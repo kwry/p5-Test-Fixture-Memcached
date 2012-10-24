@@ -109,6 +109,8 @@ Required parameter. memd is L<Cache::Memcached::Fast>'s object
 
 Required parameter. fixture is SCALAR or ARRAYREF, Specify fixture files.
 
+=back
+
 =head1 SEE ALSO
 
 L<Test::Fixture::KyotoTycoon> L<Cache::Memcached::Fast> L<YAML::XS>
