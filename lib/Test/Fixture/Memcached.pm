@@ -8,10 +8,10 @@ use Carp;
 use YAML::XS qw(LoadFile);
 use Cache::Memcached::Fast;
 
-our @EXPORT = qw(construct_fixture);
+our @EXPORT = qw(construct_memcached_fixture);
 our $VERSION = '0.01';
 
-sub construct_fixture {
+sub construct_memcached_fixture {
     my %args = @_;
     my $fixture;
 
@@ -86,7 +86,7 @@ Test::Fixture::Memcached - load fixture data to memcached
   # in your t/*.t
   use Test::Fixture::Memcached;
   ## $memd is Cache::Memcached::Fast instance
-  my $fixture = construct_fixture memd => $memd, fixture => "t/fixture.yaml";
+  my $fixture = construct_memcached_fixture memd => $memd, fixture => "t/fixture.yaml";
 
 =head1 DESCRIPTION
 
@@ -95,7 +95,7 @@ This module implements the Test::Fixture::KyotoTycoon helpful.
 
 =head1 METHODS
 
-=head2 construct_fixture
+=head2 construct_memcached_fixture
 
 load to memcached
 

@@ -1,5 +1,6 @@
 use strict;
 use Test::More;
+use Test::Exception;
 use Test::Fixture::Memcached;
 use Cache::Memcached::Fast;
 use YAML::XS qw(LoadFile);
@@ -35,7 +36,7 @@ my $memd = Cache::Memcached::Fast->new({ servers => ["127.0.0.1:".$memcached->po
 
 subtest 'load fixture' => sub {
     foreach my $src ($fixture_yaml, $arrayref) {
-        construct_fixture memd => $memd, fixture => $src;
+        construct_memcached_fixture memd => $memd, fixture => $src;
 
         # foo
         is $memd->get("foo"), "bar", "foo is bar";
@@ -54,11 +55,22 @@ subtest 'load fixture' => sub {
     }
 };
 
+subtest 'validate fixture' => sub {
+    dies_ok {
+        construct_memcached_fixture memd => $memd, fixture => { key => 'aaa', value => 'bbb' }
+    };
+    dies_ok {
+        construct_memcached_fixture memd => $memd, fixture => [
+            { key => 'aaa', invalid => 'bbb' }
+        ];
+    };
+};
+
 subtest 'cleard fixture' => sub {
-    construct_fixture memd => $memd, fixture => [{ key => 'foo', value => 'bar' }];
+    construct_memcached_fixture memd => $memd, fixture => [{ key => 'foo', value => 'bar' }];
     # foo
     is $memd->get("foo"), "bar", "foo is bar";
-    construct_fixture memd => $memd, fixture => [{ key => 'bar', value => 'foo' }];
+    construct_memcached_fixture memd => $memd, fixture => [{ key => 'bar', value => 'foo' }];
     # bar
     is $memd->get("bar"), "foo", "bar is foo";
     is $memd->get("foo"), undef, "foo is undef";
